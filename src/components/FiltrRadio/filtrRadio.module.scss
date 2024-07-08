@@ -1,0 +1,18 @@
+.radio {
+  width: 5rem;
+  padding: 0.5rem 0;
+  background-color: #fff;
+
+  color: black;
+  border-radius: 1.5rem;
+  font-weight: 500;
+
+  form {
+    display: flex;
+    justify-content: space-around;
+  }
+
+  span {
+    font-size: 1rem;
+  }
+}
