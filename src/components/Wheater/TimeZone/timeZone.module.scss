@@ -1,0 +1,19 @@
+.time_zone {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 40%;
+
+  .filter {
+    width: 12rem;
+    align-items: center;
+    margin: 0 auto;
+    .img {
+      width: 40px;
+
+      img {
+        width: 100%;
+      }
+    }
+  }
+}

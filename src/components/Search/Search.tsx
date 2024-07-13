@@ -1,23 +1,25 @@
-import React, { useEffect, useState } from "react";
-import { fetchWeatherData } from "../../redux/citySlice/citySlice";
-import { useAppDisptach } from "../../redux/store/hooks";
+import React, { useContext, ChangeEvent, useState } from "react";
+import { SearchRadioContext } from "../../context/SearchContext";
 
-const Search = () => {
-  const [searchCity, setSearchCity] = useState("");
-  const dispatch = useAppDisptach();
+const Search: React.FC = () => {
+  const { searchQuery, setSearchQuery } = useContext(SearchRadioContext);
+  const [searchElement, setSearchElement] = useState<string>("");
 
-  const handleSearch = () => {
-    dispatch(fetchWeatherData(searchCity));
+  const handleSearchInputChange = () => {
+    setSearchQuery(searchElement);
+    setSearchElement("");
   };
 
   return (
     <div>
       <input
         type="text"
-        value={searchCity}
-        onChange={(e) => setSearchCity(e.target.value)}
+        value={searchElement}
+        onChange={(e) => setSearchElement(e.target.value)}
       />
-      <button onClick={handleSearch}>SearchCity</button>
+      <button style={{ cursor: "pointer" }} onClick={handleSearchInputChange}>
+        SearchCity
+      </button>
     </div>
   );
 };

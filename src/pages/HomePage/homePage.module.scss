@@ -1,13 +1,19 @@
 .container {
-  max-width: 1700px;
+  width: 60%;
   margin: 0 auto;
-  margin-top: 1rem;
 
-  .Upper_block {
+  .top_block {
     width: 60%;
     margin: 0 auto;
-    display: flex;
-    text-align: center;
-    justify-content: space-around;
+    padding-top: 1rem;
+
+    div {
+      display: flex;
+      justify-content: space-between;
+    }
+  }
+
+  .bottom_block {
+    margin-top: 20rem;
   }
 }

@@ -1,64 +1,124 @@
-import React, { useEffect, useState } from "react";
-import classes from "./homePage.module.scss";
-import CurrentWheater from "../../components/Wheater/CurrentWeather/CurrentWheater";
+import React, { useContext, useEffect, useState } from "react";
+import { SearchRadioContext } from "../../context/SearchContext";
 import axios from "axios";
-import DailiWeather from "../../components/Wheater/DailiWheater/DailiWeather";
-import { useAppSelector, useAppDisptach } from "../../redux/store/hooks";
-import { fetchWeatherData } from "../../redux/citySlice/citySlice";
+import CurrentLocation from "../../components/CurrentLocation/CurrentLocation";
+import CurrentCity from "../../components/Wheater/CurrentCity/CurrentCity";
+import classes from "./homePage.module.scss";
+import WeekZone from "../../components/Wheater/WeekZone/WeekZone";
+import TimeZone from "../../components/Wheater/TimeZone/TimeZone";
 
-const apiKey = process.env.API_KEY;
+const HomePage = () => {
+  const { searchQuery, selectRadio } = useContext(SearchRadioContext);
+  const [cityLocation, setCityLocation] = useState<any>({});
+  const [weekCityWeather, setWeekCityWeather] = useState<any>({});
+  const [convertWeather, setConvertWeather] = useState<string | undefined>(
+    undefined
+  );
+  const [dateFilter, setDateFilter] = useState("2024-07-14");
 
-const HomePage: React.FC = () => {
-  const [weatherDataState, setWeatherDataState] = useState(null);
-  const [dailyWeather, setDailiWeather] = useState([]);
-  const dispatch = useAppDisptach();
+  const getConvert = () => {
+    if (selectRadio === "celsius" && cityLocation && cityLocation.main) {
+      const temperatureConvert = cityLocation.main.temp;
+      const celsiusValue = (temperatureConvert - 273.15).toFixed();
 
-  const weatherData = useAppSelector((item) => item.city.weatherData);
+      setConvertWeather(celsiusValue + "°C");
+    } else {
+      if (selectRadio === "fahrenheit" && cityLocation && cityLocation.main) {
+        const temperatureConvert = cityLocation.main.temp;
+        const fahrenheitValue = (
+          ((temperatureConvert - 273.15) * 9) / 5 +
+          32
+        ).toFixed();
 
-  const currentWheater = async () => {
+        setConvertWeather(fahrenheitValue + "°F");
+      }
+    }
+  };
+
+  const getWeekWeather = async () => {
     try {
       const response = await axios.get(
-        `https://api.openweathermap.org/data/2.5/weather?q=Yerevan&appid=aefed3b594c20588c1bdeae497bde77b`
+        `https://api.openweathermap.org/data/2.5/forecast?q=${searchQuery}&appid=f8b753704e7cacff52cb040b0ce5722d`
       );
-      setWeatherDataState(response.data);
+
+      if (response.data && response.data.list) {
+        const forecastList = response.data.list;
+
+        const filteredData: { [date: string]: any[] } = {};
+
+        forecastList.forEach(
+          (forecastItem: { weather: any; main: any; dt_txt: string }) => {
+            const date = forecastItem.dt_txt.split(" ")[0];
+            const time = forecastItem.dt_txt.split(" ")[1];
+
+            if (!filteredData[date]) {
+              filteredData[date] = [];
+            }
+
+            filteredData[date].push({
+              time: time,
+              temperature: forecastItem.main.temp,
+              icon: forecastItem.weather[0].icon,
+            });
+          }
+        );
+
+        setWeekCityWeather(filteredData);
+      }
     } catch (error) {
       console.error("Error fetching weather data:", error);
     }
   };
 
-  const dailyWeatherData = async () => {
+  const addDates = (date: string) => {
+    setDateFilter(date);
+  };
+
+  const getCurrentCity = async () => {
     try {
-      const response = await axios.get(
-        `https://api.openweathermap.org/data/2.5/forecast?q=Yerevan&appid=aefed3b594c20588c1bdeae497bde77b`
-      );
-      setDailiWeather(response.data.list);
+      if (searchQuery) {
+        const response = await axios.get(
+          `https://api.openweathermap.org/data/2.5/weather?q=${searchQuery}&appid=f8b753704e7cacff52cb040b0ce5722d`
+        );
+        setCityLocation(response.data);
+      }
     } catch (error) {
       console.error("Error fetching weather data:", error);
     }
   };
 
   useEffect(() => {
-    if (!weatherDataState) {
-      dispatch(fetchWeatherData("Yerevan"));
-    }
-    currentWheater();
-    dailyWeatherData();
-  }, [dispatch, weatherDataState]);
+    getCurrentCity();
+  }, [searchQuery]);
+
+  useEffect(() => {
+    getWeekWeather();
+  }, [searchQuery]);
+
+  useEffect(() => {
+    getConvert();
+  }, [cityLocation, selectRadio]);
 
   return (
-    <>
-      <div>
-        <div className={classes.container}>
-          <div className={classes.Upper_block}>
-            <CurrentWheater weatherData={weatherData} />
-            <DailiWeather dailyWeather={dailyWeather} />
-          </div>
-          <div className={classes.bottom_block}>
-            <div>3</div>
-          </div>
+    <div className={classes.container}>
+      <CurrentLocation />
+      <div className={classes.top_block}>
+        <div>
+          <CurrentCity
+            citiLocation={cityLocation}
+            convertWeather={convertWeather}
+          />
+          <TimeZone dateFilter={dateFilter} weekCityWeather={weekCityWeather} />
         </div>
       </div>
-    </>
+      <div className={classes.bottom_block}>
+        <WeekZone
+          weekCityWeather={weekCityWeather}
+          convertWeather={convertWeather}
+          addDates={addDates}
+        />
+      </div>
+    </div>
   );
 };
 

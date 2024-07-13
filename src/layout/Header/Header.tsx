@@ -7,13 +7,8 @@ const Header = () => {
   return (
     <div className={classes.header}>
       <div className={classes.container}>
-        <div></div>
-        <div>
-          <Search />
-        </div>
-        <div>
-          <FiltrRadio />
-        </div>
+        <Search />
+        <FiltrRadio />
       </div>
     </div>
   );
